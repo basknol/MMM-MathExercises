@@ -34,6 +34,7 @@ Module.register("MMM-MathExercises", {
     },
 
     setDefaults: function () {
+        this.exercises = [];
         this.resetCounters();
         this.resetMenuInput();
         this.showMenu = this.config.showInputMenu;
@@ -57,7 +58,7 @@ Module.register("MMM-MathExercises", {
 
         if (this.showMenu) {
             wrapper.className = "math-excercises-menu";
-            wrapper.innerHTML = "Kies type oefening:<br /><ol><li>Optellen</li><li>Aftrekken</li><li>Vermenigvuldigen</li><li>Delen</li><li>Gemengd</li></ol>";            
+            wrapper.innerHTML = "Kies type oefening:<br /><ol><li>Plus</li><li>Min</li><li>Keer</li><li>Delen</li><li>Gemengd</li></ol>";
         } else if (this.showMultiplyMenu) {
             wrapper.className = "math-multiply-menu";
             wrapper.innerHTML = "Kies vermenigvuldigings oefening:<br /><ol><li>Tafel op volgorde</li><li>Tafel door elkaar</li><li>Tafels 1-10 door elkaar</li><li>Geen tafels</li></ol>";
@@ -65,9 +66,12 @@ Module.register("MMM-MathExercises", {
             var multiplyTableMenu = [];
             for (var i = 1; i <= 10; i++) {
                 multiplyTableMenu.push(`<li>Tafel van ${i}</li>`);
-            }            
+            }
             wrapper.className = "math-multiply-table-menu";
             wrapper.innerHTML += `<ol>${multiplyTableMenu.join("")}</ol>`;
+        } else if (this.summaryIsShown) {
+            wrapper.className = "math-excercises-summary";
+            wrapper.innerHTML += `${this.currentExcercise}<br /><ol>${this.exercises.join("")}</ol>`;
         } else {
             wrapper.innerHTML = this.currentExcercise;
         }
@@ -142,8 +146,12 @@ Module.register("MMM-MathExercises", {
 
     handleMultiplyTableMenuKeyEvent: function (key) {
         var keyInt = parseInt(key);
-        if (!isNaN(keyInt) && keyInt >= 1 && keyInt <= 10) {
-            this.multiplyTableNumber = keyInt;
+        if (!isNaN(keyInt) && keyInt >= 0 && keyInt <= 9) {
+            if (keyInt === 0) {
+                this.multiplyTableNumber = 10;
+            } else {
+                this.multiplyTableNumber = keyInt;
+            }
         }
         this.showMultiplyTableMenu = false;
         this.generateExcercise();
@@ -236,12 +244,14 @@ Module.register("MMM-MathExercises", {
         this.currentExcercise = this.question + " = " + this.input;
     },
 
-    validateExcercise: function() {
+    validateExcercise: function () {        
         if (parseInt(this.answer) === parseInt(this.input)) {
             console.log("Correct!");
             this.correctCounter++;
+            this.exercises.push(`<li class="correct">${this.currentExcercise} (goed)</li>`);
         } else {
             console.log("Incorrect!");
+            this.exercises.push(`<li class="incorrect">${this.currentExcercise} (fout)</li>`);
         }  
 
         if (this.exerciseCounter === this.config.numberOfExercises && !this.currentExcercise.startsWith("Total")) {
